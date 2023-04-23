@@ -5,16 +5,19 @@ import cupy as cp
 
 
 class PricingEngine:
-    """定价引擎的基类，具体的定价引擎需要先继承它。
+    """定价引擎, 用来为Autocall结构进行定价。
 
-    基类确定了定价引擎的模板，定义了和定价有关的参数。
-    设计定价引擎的时候，要基于模板进行功能函数的实现。
+    使用时分以下几步：
+    1、实例化（推荐不带任何参数）。
+    2、运行set_underlying_parameters设置标的资产的参数。
+    3、运行add_autocall添加具体的结构类，autocall_setting是结构相关参数。
+    4、运行定价函数或希腊字母计算函数
 
     属性:
-        s0: 标的资产初始价格，默认是100，
-        sigma: 标的资产年化波动率，默认是0.2，
-        r: 无风险利率，默认为0，
-        q: 标的资产分红率，默认为0。
+        s0: 标的资产初始价格，默认是None，
+        sigma: 标的资产年化波动率，默认是None，
+        r: 无风险利率，默认为None，
+        q: 标的资产分红率，默认为None。
     """
 
 
@@ -41,6 +44,7 @@ class PricingEngine:
         r: float,
         q: float
     ) -> None:
+        """设置标的资产参数"""
         self.s0: float = s0
         self.sigma: float = sigma
         self.r: float = r
