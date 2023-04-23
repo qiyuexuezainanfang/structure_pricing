@@ -1,11 +1,10 @@
-from abc import ABC
 from typing import Dict
 
 import numpy as np
 import cupy as cp
 
 
-class PricingBaseEngine(ABC):
+class PricingEngine:
     """定价引擎的基类，具体的定价引擎需要先继承它。
 
     基类确定了定价引擎的模板，定义了和定价有关的参数。
@@ -18,20 +17,36 @@ class PricingBaseEngine(ABC):
         q: 标的资产分红率，默认为0。
     """
 
+
     def __init__(
         self,
-        s0: float = 100.0,
-        sigma: float = 0.2,
-        r: float = 0,
-        q: float = 0
+        s0: float = None,
+        sigma: float = None,
+        r: float = None,
+        q: float = None
     ) -> None:
         """构造函数，定义标的资产的参数"""
         self.s0: float = s0
         self.sigma: float = sigma
         self.r: float = r
         self.q: float = q
-        self.drift: float = self.r - self.q
+        if r and q:
+            self.drift: float = self.r - self.q
         self.autocalls: Dict[str, type] = {}
+
+    def set_underlying_parameters(
+        self,
+        s0: float,
+        sigma: float,
+        r: float,
+        q: float
+    ) -> None:
+        self.s0: float = s0
+        self.sigma: float = sigma
+        self.r: float = r
+        self.q: float = q
+        self.drift: float = self.r - self.q
+
 
     def add_autocall(
         self,
