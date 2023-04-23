@@ -95,6 +95,7 @@ class AutocallTemplate(ABC):
         self._set_strike_after_knock_in()
         self._set_time_to_maturity()
 
+    # 以下方法在子类中可以实现
     def _set_knock_in_level(self) -> None:
         pass
 
