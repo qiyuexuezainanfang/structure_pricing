@@ -20,42 +20,31 @@ class PricingEngine:
         q: 标的资产分红率，默认为None。
     """
 
+    params = [
+        's0',
+        'sigma',
+        'r',
+        'q',
+    ]
 
-    def __init__(
-        self,
-        s0: float = None,
-        sigma: float = None,
-        r: float = None,
-        q: float = None
-    ) -> None:
-        """构造函数，定义标的资产的参数"""
-        self.s0: float = s0
-        self.sigma: float = sigma
-        self.r: float = r
-        self.q: float = q
-        if r and q:
-            self.drift: float = self.r - self.q
+    def __init__(self) -> None:
         self.autocalls: Dict[str, type] = {}
 
-    def set_underlying_parameters(
-        self,
-        s0: float,
-        sigma: float,
-        r: float,
-        q: float
-    ) -> None:
+    def set_underlying_parameters(self, setting: Dict[str, float]) -> None:
         """设置标的资产参数"""
-        self.s0: float = s0
-        self.sigma: float = sigma
-        self.r: float = r
-        self.q: float = q
-        self.drift: float = self.r - self.q
 
+        # 确保标的资产参数都有被传入，并且创建它们
+        for param in self.params:
+            if param not in setting.keys():
+                print(f'缺少{param}参数')
+                return
+            setattr(self, param, setting[param])
+        self.drift: float = self.r - self.q
 
     def add_autocall(
         self,
         autocall_class: type,
-        autocall_setting: dict
+        autocall_setting: Dict[str, float]
     ) -> None:
         """往引擎增加autocall"""
         self.autocall = autocall_class(autocall_setting)
@@ -81,9 +70,9 @@ class PricingEngine:
 
         # 先考虑敲出场景
         # 生成和观察日有关的网格
-        knock_out_scenario = cp.tile(self.autocall.view_day, (n_path, 1)).T
+        knock_out_scenario = cp.tile(self.autocall.knock_out_view_day, (n_path, 1)).T
         knock_out_scenario = cp.where(
-            st[self.autocall.view_day] > self.autocall.knock_out_level,
+            st[self.autocall.knock_out_view_day] > self.autocall.knock_out_level,
             knock_out_scenario,
             cp.inf
             )
