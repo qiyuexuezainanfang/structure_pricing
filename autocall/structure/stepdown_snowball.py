@@ -1,14 +1,15 @@
-from typing import List, Dict
+from typing import Dict
 
 import numpy as np
 
-from .. import AutocallTemplate
+from . import OriginalSnowBall
 
 
-class StepDownSnowBall(AutocallTemplate):
+class StepDownSnowBall(OriginalSnowBall):
     """降敲雪球
 
-    票息不变，敲出点位随时间（每月）逐步下调。
+    票息不变，敲出点位随时间（每月）逐步下调，
+    其他参数跟经典雪球一样。
 
     属性:
         knock_in_level: 敲入水平，默认为1，即标的初始价格S0水平，
@@ -32,24 +33,16 @@ class StepDownSnowBall(AutocallTemplate):
 
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义降敲雪球的参数"""
+        super.__init__(setting)
 
-        # 先检查本结构所需要的参数有没有被传入
-        for param in self.params:
-            if param not in setting.keys():
-                print(f'缺少{param}参数')
-                return
+        # 如果敲出水平是一个整数或者浮点数，则生成降敲列表
+        if (
+            isinstance(self.knock_out_level, int)
+                or isinstance(self.knock_out_level, float)):
+            self._set_knock_out_level()
 
-        super().__init__(setting)
-
-        # 生成敲出观察日列表
-        self.knock_out_view_day: List[int] = [
-            i*21-1 for i in range(
-                1,
-                setting['time_to_maturity'] * setting['knock_out_view_day'] + 1
-                )
-            ]
-
-        # 生成敲出水平列表
+    def _set_knock_out_level(self) -> None:
+        """生成默认敲出水平列表"""
         self.knock_out_level = np.linspace(
             self.knock_out_level,
             self.knock_in_level,

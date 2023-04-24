@@ -1,13 +1,12 @@
 from typing import Dict
 
-from . import StepDownSnowBall
+from . import OriginalSnowBall
 
 
-class ParachuteSnowBall(StepDownSnowBall):
-    """降落伞雪球
+class ProtectedSnowBall(OriginalSnowBall):
+    """限损雪球
 
-    票息不变，敲出点位最后一个月下跳，
-    其他参数跟经典雪球一样。
+    在经典雪球的基础上限制最大亏损。
 
     属性:
         knock_in_level: 敲入水平，默认为1，即标的初始价格S0水平，
@@ -16,9 +15,10 @@ class ParachuteSnowBall(StepDownSnowBall):
         coupon_div: 红利率，
         knock_out_view_day: 敲出观察日，默认1年观察12次，
         time_to_maturity: 续存期，默认为1年
+        protected_level: 被保护的净值水平
     """
 
-    name = '降落伞雪球'
+    name = '限损雪球'
 
     params = [
         'knock_in_level',
@@ -26,14 +26,10 @@ class ParachuteSnowBall(StepDownSnowBall):
         'coupon_rate',
         'coupon_div',
         'knock_out_view_day',
-        'time_to_maturity'
+        'time_to_maturity',
+        'protected_level'
     ]
 
     def __init__(self, setting: Dict[str, float]) -> None:
-        """构造函数，定义降落伞雪球的参数"""
+        """构造函数，定义限损雪球的参数"""
         super.__init__(setting)
-
-    def _set_knock_out_level(self) -> None:
-        """生成默认敲出水平列表，最后一个月敲出水平减半"""
-        self.knock_out_level = [self.knock_out_level] * self.knock_out_view_day
-        self.knock_out_level[-1] = self.knock_out_level[-1] / 2

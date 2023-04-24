@@ -39,9 +39,18 @@ class OriginalSnowBall(AutocallTemplate):
                 print(f'缺少{param}参数')
                 return
 
+        # 再检查传入的参数是否多余
+        for param in setting.keys():
+            if param not in self.params:
+                del setting[param]
+
         super().__init__(setting)
 
-        # 生成敲出观察日列表
+        # 敲出观察日如果是一个整数，则生成观察日列表
+        if isinstance(self.knock_out_view_day, int):
+            self._set_knock_out_view_day(setting)
+
+    def _set_knock_out_view_day(self, setting) -> None:
         self.knock_out_view_day: List[int] = [
             i*21-1 for i in range(
                 1,

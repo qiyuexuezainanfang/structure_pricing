@@ -54,25 +54,6 @@ class AutocallTemplate(ABC):
             if param in self.params:
                 setattr(self, param, setting[param])
 
-        self.generate_params()  # 尝试生成参数列表
-
-    def generate_params(self) -> None:
-        self._set_coupon_rate()
-        self._set_coupon_div()
-        self._set_knock_in_level()
-        self._set_knock_in_times()
-        self._set_knock_in_view_day()
-        self._set_knock_out_level()
-        self._set_knock_out_view_day()
-        self._set_participation_rate_knock_in()
-        self._set_participation_rate_no_knock_in()
-        self._set_protected_level()
-        self._set_reset_coupon()
-        self._set_reset_knock_out_level()
-        self._set_reset_time()
-        self._set_strike_after_knock_in()
-        self._set_time_to_maturity()
-
     # 以下方法在子类中如有需要可以实现，主要用来生成某种规则的参数列表
     def _set_knock_in_level(self) -> None:
         pass
