@@ -14,3 +14,11 @@ from .phoenix import Phoenix
 from .knock_out_reset_snowball import KnockOutResetSnowBall
 from .autocall_note import AutocallNote
 from .paris_snowball import ParisSnowBall
+from .diebian_snowball import DiebianSnowBall
+from .diebian_parachute_snowball import DiebianParachuteSnowBall
+from .european_diebian_snowball import EuropeanDiebianSnowBall
+from .diebian_stepdown_snowball import DiebianStepDownSnowBall
+from .airbag import Airbag
+from .booster import Booster
+from .tongxin_snowball import TongxinSnowBall
+from .bearish_snowball import BearishSnowBall

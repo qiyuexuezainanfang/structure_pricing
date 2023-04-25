@@ -31,4 +31,3 @@ class DiebianParachuteSnowBall(ParachuteSnowBall):
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义蝶变浮力雪球的参数"""
         super.__init__(setting)
-
