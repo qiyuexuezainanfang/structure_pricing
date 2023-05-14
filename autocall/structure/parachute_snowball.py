@@ -20,20 +20,16 @@ class ParachuteSnowBall(StepDownSnowBall):
 
     name = '降落伞雪球'
 
-    params = [
-        'knock_in_level',
-        'knock_out_level',
-        'coupon_rate',
-        'coupon_div',
-        'knock_out_view_day',
-        'time_to_maturity'
-    ]
-
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义降落伞雪球的参数"""
-        super.__init__(setting)
+        super().__init__(setting)
 
     def _set_knock_out_level(self) -> None:
-        """生成默认敲出水平列表，最后一个月敲出水平减半"""
-        self.knock_out_level = [self.knock_out_level] * self.knock_out_view_day
-        self.knock_out_level[-1] = self.knock_out_level[-1] / 2
+        """生成敲出水平列表"""
+        self.new_knock_out_level = []
+        high_knock_out_level = self.knock_out_level[0]
+        low_knock_out_level = self.knock_out_level[1]
+        self.new_knock_out_level.extend(
+            [high_knock_out_level] * (len(self.knock_out_view_day) - 1))
+        self.new_knock_out_level.append(low_knock_out_level)
+        self.knock_out_level = self.new_knock_out_level

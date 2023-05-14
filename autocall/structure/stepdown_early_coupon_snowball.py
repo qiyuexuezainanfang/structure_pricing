@@ -1,14 +1,12 @@
 from typing import Dict
 
-import numpy as np
-
-from . import EarlyCouponSnowBall
+from . import StepDownSnowBall
 
 
-class StepDownEarlyCouponSnowBall(EarlyCouponSnowBall):
+class StepDownEarlyCouponSnowBall(StepDownSnowBall):
     """双降雪球
 
-    在早利雪球的基础上，逐步降低敲出价
+    票息和敲出点位同时变，在降敲的基础上，敲出票息逐级下降
 
     属性:
         knock_in_level: 敲入水平，默认为1，即标的初始价格S0水平，
@@ -21,29 +19,28 @@ class StepDownEarlyCouponSnowBall(EarlyCouponSnowBall):
 
     name = '双降雪球'
 
-    params = [
-        'knock_in_level',
-        'knock_out_level',
-        'coupon_rate',
-        'coupon_div',
-        'knock_out_view_day',
-        'time_to_maturity'
-    ]
+    # params = [
+    #     'knock_in_level',
+    #     'knock_out_level',
+    #     'coupon_rate',
+    #     'coupon_div',
+    #     'knock_out_view_day',
+    #     'time_to_maturity'
+    # ]
 
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义双降雪球的参数"""
-        super.__init__(setting)
+        super().__init__(setting)
+        self._set_coupon_rate()
 
-        # 如果敲出水平是一个整数或者浮点数，则生成降敲列表
-        if (
-            isinstance(self.knock_out_level, int)
-                or isinstance(self.knock_out_level, float)):
-            self._set_knock_out_level()
-
-    def _set_knock_out_level(self) -> None:
-        """生成默认敲出水平列表"""
-        self.knock_out_level = np.linspace(
-            self.knock_out_level,
-            self.knock_in_level,
-            len(self.knock_out_view_day)
-            )
+    def _set_coupon_rate(self) -> None:
+        """生成敲出票息列表"""
+        self.new_coupon_rate = []
+        for i in range(len(self.coupon_rate) - 1):
+            pre_item = self.coupon_rate[i]
+            next_item = self.coupon_rate[i + 1]
+            self.new_coupon_rate.extend(
+                [pre_item[1]] * (next_item[0] - pre_item[0]))
+        self.new_coupon_rate.extend(
+            [next_item[1]] * (len(self.knock_out_view_day) - next_item[0]))
+        self.coupon_rate = self.new_coupon_rate

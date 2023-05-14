@@ -1,3 +1,5 @@
+from typing import Dict
+
 from . import EarlyCouponSnowBall
 
 
@@ -17,11 +19,19 @@ class DiebianSnowBall(EarlyCouponSnowBall):
 
     name = '蝶变雪球'
 
-    params = [
-        'knock_in_level',
-        'knock_out_level',
-        'coupon_rate',
-        'coupon_div',
-        'knock_out_view_day',
-        'time_to_maturity'
-    ]
+    def __init__(self, setting: Dict[str, float]) -> None:
+        """构造函数，定义蝶变雪球的参数"""
+        super().__init__(setting)
+
+    def _set_coupon_rate(self) -> None:
+        """生成敲出票息率列表"""
+        self.new_coupon_rate = []
+
+        for i in range(len(self.coupon_rate) - 1):
+            pre_item = self.coupon_rate[i]
+            next_item = self.coupon_rate[i + 1]
+            self.new_coupon_rate.extend(
+                [pre_item[1]] * (next_item[0] - pre_item[0]))
+        self.new_coupon_rate.extend(
+            [next_item[1]] * (len(self.knock_out_view_day) - next_item[0]))
+        self.coupon_rate = self.new_coupon_rate

@@ -1,11 +1,10 @@
 from typing import Dict
 
-import numpy as np
+from .. import AutocallTemplate
+from .. import PricingEngine
 
-from . import OriginalSnowBall
 
-
-class StepDownSnowBall(OriginalSnowBall):
+class StepDownSnowBall(AutocallTemplate, PricingEngine):
     """降敲雪球
 
     票息不变，敲出点位随时间（每月）逐步下调，
@@ -31,20 +30,19 @@ class StepDownSnowBall(OriginalSnowBall):
         'time_to_maturity'
     ]
 
-    def __init__(self, setting: Dict[str, float]) -> None:
+    def __init__(self, setting: Dict) -> None:
         """构造函数，定义降敲雪球的参数"""
-        super.__init__(setting)
-
-        # 如果敲出水平是一个整数或者浮点数，则生成降敲列表
-        if (
-            isinstance(self.knock_out_level, int)
-                or isinstance(self.knock_out_level, float)):
-            self._set_knock_out_level()
+        super().__init__(setting)
+        self._set_knock_out_level()
 
     def _set_knock_out_level(self) -> None:
-        """生成默认敲出水平列表"""
-        self.knock_out_level = np.linspace(
-            self.knock_out_level,
-            self.knock_in_level,
-            len(self.knock_out_view_day)
-            )
+        """生成敲出列表，重载AutocallTemplate的方法"""
+        self.new_knock_out_level = []
+        for i in range(len(self.knock_out_level) - 1):
+            pre_item = self.knock_out_level[i]
+            next_item = self.knock_out_level[i + 1]
+            self.new_knock_out_level.extend(
+                [pre_item[1]] * (next_item[0] - pre_item[0]))
+        self.new_knock_out_level.extend(
+            [next_item[1]] * (len(self.knock_out_view_day) - next_item[0]))
+        self.knock_out_level = self.new_knock_out_level

@@ -1,3 +1,5 @@
+from typing import Dict
+
 from . import OriginalSnowBall
 
 
@@ -23,3 +25,8 @@ class AutocallNote(OriginalSnowBall):
         'time_to_maturity',
         'coupon_div'
     ]
+
+    def __init__(self, setting: Dict[str, float]) -> None:
+        """构造函数，定义小雪球的参数"""
+        super().__init__(setting)
+        self.knock_in_level = 0

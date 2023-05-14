@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Dict
+from typing import Dict, List
 
 
 class AutocallTemplate(ABC):
@@ -46,13 +46,22 @@ class AutocallTemplate(ABC):
         'knock_in_times'
     ]
 
-    def __init__(self, setting: Dict[str, float]) -> None:
+    def __init__(self, setting: Dict) -> None:
         """构造函数，定义autocall结构大类的参数"""
+
+        # 先检查本结构所需要的参数有没有被传入
+        for param in self.params:
+            if param not in setting.keys():
+                print(f'{self.name}缺少{param}参数')
+                exit(1)
 
         # 当传入的参数属于autocall类变量，就创建它
         for param in setting.keys():
             if param in self.params:
                 setattr(self, param, setting[param])
+
+        # 基本上autocall的敲出观察日都是等间隔的，特殊的那些在子类重新定义
+        self._set_knock_out_view_day(setting)
 
     # 以下方法在子类中如有需要可以实现，主要用来生成某种规则的参数列表
     def _set_knock_in_level(self) -> None:
@@ -67,8 +76,13 @@ class AutocallTemplate(ABC):
     def _set_coupon_div(self) -> None:
         pass
 
-    def _set_knock_out_view_day(self) -> None:
-        pass
+    def _set_knock_out_view_day(self, setting) -> None:
+        self.knock_out_view_day: List[int] = [
+            i*21-1 for i in range(
+                1,
+                setting['time_to_maturity'] * setting['knock_out_view_day'] + 1
+                )
+            ]
 
     def _set_knock_in_view_day(self) -> None:
         pass

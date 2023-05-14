@@ -1,3 +1,5 @@
+from typing import Dict
+
 from . import DiebianSnowBall
 
 
@@ -17,11 +19,10 @@ class EuropeanDiebianSnowBall(DiebianSnowBall):
 
     name = '欧式蝶变雪球'
 
-    params = [
-        'knock_in_level',
-        'knock_out_level',
-        'coupon_rate',
-        'coupon_div',
-        'knock_out_view_day',
-        'time_to_maturity'
-    ]
+    def __init__(self, setting: Dict[str, float]) -> None:
+        """构造函数，定义欧式蝶变雪球的参数"""
+        super().__init__(setting)
+        self.knock_out_view_day: list[int] = [
+            setting['time_to_maturity']
+            * setting['knock_out_view_day'] * 21 - 1
+            ]

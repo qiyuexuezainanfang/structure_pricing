@@ -1,9 +1,11 @@
 from typing import Dict
 
-from .. import AutocallTemplate
+import numpy as np
+
+from . import OriginalSnowBall
 
 
-class Airbag(AutocallTemplate):
+class Airbag(OriginalSnowBall):
     """安全气囊
 
     设置价格保护区间，标的资产价格未跌破安全边界则不承受价格下降的风险。
@@ -26,16 +28,24 @@ class Airbag(AutocallTemplate):
 
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义安全气囊的参数"""
-
-        # 先检查本结构所需要的参数有没有被传入
-        for param in self.params:
-            if param not in setting.keys():
-                print(f'缺少{param}参数')
-                return
-
-        # 再检查传入的参数是否多余
-        for param in setting.keys():
-            if param not in self.params:
-                del setting[param]
-
         super().__init__(setting)
+        self.knock_out_level = np.inf
+        self.coupon_rate = 0
+        self.coupon_div = 0
+
+    def _cal_knock_out_payoff(self) -> None:
+        """计算敲出payoff，这里计算的是上涨参与收益"""
+        self.knock_out_profit = 0
+
+    def _cal_knock_out_payoff(self) -> None:
+        """重载PricingEgine的敲出payoff"""
+        super()._cal_knock_out_payoff()
+        # 计算上涨参与收益
+        rise_profit = [
+            self.st[t.astype(int), i]
+            for i, t in enumerate(self.knock_out_date)
+            if self.knock_out_date[i] != np.inf]
+        rise_profit = np.sum(
+            (np.array(rise_profit) - self.knock_out_level)
+            * self.participation_rate_no_knock_in)
+        self.knock_out_profit = self.knock_out_profit + rise_profit

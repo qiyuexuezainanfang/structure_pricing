@@ -17,100 +17,103 @@ def judge_option_params(autocall_class: type, params: Dict) -> None:
     """
     if autocall_class.name == '经典雪球':
         if not (
-            isinstance(params['knock_out_view_day'], int) or
-                (
-                isinstance(params['knock_out_view_day'][0], int) and
-                    isinstance(params['knock_out_view_day'], List))):
+            isinstance(params['knock_out_view_day'], int)
+                ):
             print('经典雪球参数输入不合规范')
-            return
+            exit(1)
 
     elif autocall_class.name == '降敲雪球':
         if not (
-            isinstance(params['knock_out_level'], List) or
-                (
-                isinstance(params['knock_out_level'][0], Tuple) and
-                    isinstance(params['knock_out_level'], List))):
+            isinstance(params['knock_out_level'], List) and
+                isinstance(params['knock_out_level'][0], Tuple)):
             print('降敲雪球参数输入不合规范')
-            return
+            exit(1)
 
     elif autocall_class.name == 'KI递增雪球':
         if not (
-            isinstance(params['knock_in_level'], List) or
-                (
-                isinstance(params['knock_in_level'][0], Tuple) and
-                    isinstance(params['knock_in_level'], List))):
+            isinstance(params['knock_in_level'], List) and
+                isinstance(params['knock_in_level'][0], Tuple)):
             print('KI递增雪球参数输入不合规范')
-            return
+            exit(1)
 
     elif autocall_class.name == '早利雪球':
-        if not isinstance(params['coupon_rate'], Tuple):
+        if not (
+            isinstance(params['coupon_rate'], List) and
+                (len(params['coupon_rate']) == 2)):
             print('早利雪球参数输入不合规范')
-            return
+            exit(1)
         elif params['time_to_maturity'] <= 1:
             print('续存期不能低于一年')
-            return
+            exit(1)
 
     elif autocall_class.name == '双降雪球':
         if not (
-            isinstance(params['knock_out_level'], List) or
-                (
-                isinstance(params['knock_out_level'][0], Tuple) and
-                    isinstance(params['knock_out_level'], List))):
+            isinstance(params['knock_out_level'], List) and
+                isinstance(params['knock_out_level'][0], Tuple)):
             print('双降雪球参数输入不合规范')
-            return
+            exit(1)
         elif not (
-            isinstance(params['coupon_rate'], List) or
-                (
-                isinstance(params['coupon_rate'][0], Tuple) and
-                    isinstance(params['coupon_rate'], List))):
+            isinstance(params['coupon_rate'], List) and
+                isinstance(params['coupon_rate'][0], Tuple)):
             print('双降雪球参数输入不合规范')
-            return
+            exit(1)
+
+    elif autocall_class.name == 'OTM雪球':
+        if not (
+            params['knock_in_level'] < params['strike_after_knock_in'] < 1
+                ):
+            print('OTM雪球参数输入不合规范')
+            exit(1)
 
     elif autocall_class.name == '降落伞雪球':
-        if not isinstance(params['knock_out_level'], Tuple):
+        if not (
+            isinstance(params['knock_out_level'], List) and
+                (len(params['knock_out_level']) == 2)):
             print('降落伞雪球参数输入不合规范')
-            return
+            exit(1)
 
     elif autocall_class.name == '蝶变雪球':
         if not (
-            isinstance(params['knock_out_level'], List) or
-                (
-                isinstance(params['knock_out_level'][0], Tuple) and
-                    isinstance(params['knock_out_level'], List))):
+            isinstance(params['coupon_rate'], List) and
+                isinstance(params['coupon_rate'][0], Tuple)):
             print('蝶变雪球参数输入不合规范')
-            return
+            exit(1)
 
     elif autocall_class.name == '蝶变浮力雪球':
         if not (
-            isinstance(params['coupon_rate'], List) or
-                (
-                isinstance(params['coupon_rate'][0], Tuple) and
-                    isinstance(params['coupon_rate'], List))):
+            isinstance(params['coupon_rate'], List) and
+                isinstance(params['coupon_rate'][0], Tuple)):
             print('蝶变浮力雪球参数输入不合规范')
-            return
-        elif not isinstance(params['knock_out_level'], Tuple):
+            exit(1)
+        elif not (
+            isinstance(params['knock_out_level'], List) and
+                (len(params['knock_out_level']) == 2)):
             print('蝶变浮力雪球参数输入不合规范')
-            return
+            exit(1)
 
     elif autocall_class.name == '欧式蝶变雪球':
         if not (
-            isinstance(params['coupon_rate'], List) or
-                (
-                isinstance(params['coupon_rate'][0], Tuple) and
-                    isinstance(params['coupon_rate'], List))):
+            isinstance(params['coupon_rate'], List) and
+                isinstance(params['coupon_rate'][0], Tuple)):
             print('欧式蝶变雪球参数输入不合规范')
-            return
+            exit(1)
 
     elif autocall_class.name == '次年双降雪球':
         if not (
-            isinstance(params['coupon_rate'], List) or
-                (
-                isinstance(params['coupon_rate'][0], Tuple) and
-                    isinstance(params['coupon_rate'], List))):
-            print('次年双降雪球参数输入不合规范')
-            return
+            isinstance(params['coupon_rate'], List) and
+                isinstance(params['coupon_rate'][0], Tuple)):
+            print('次年双降雪球敲出票息参数输入不合规范')
+            exit(1)
         elif not (
-            isinstance(params['knock_out_level'][0], Tuple) and
-                isinstance(params['knock_out_level'], List)):
-            print('次年双降雪球参数输入不合规范')
-            return
+            isinstance(params['knock_out_level'], List) and
+                isinstance(params['knock_out_level'][0], Tuple)):
+            print('次年双降雪球敲出水平参数输入不合规范')
+            exit(1)
+        elif not (
+            params['knock_out_level'][0][0] == 0 and
+                params['knock_out_level'][1][0] == 12):
+            print('次年双降雪球敲出水平参数输入不合规范')
+            exit(1)
+        elif params['time_to_maturity'] <= 1:
+            print('次年双降雪球敲出水平参数输入不合规范')
+            exit(1)

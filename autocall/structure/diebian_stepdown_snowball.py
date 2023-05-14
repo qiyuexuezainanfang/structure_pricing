@@ -1,9 +1,10 @@
 from typing import Dict
 
 from . import StepDownSnowBall
+from . import DiebianSnowBall
 
 
-class DiebianStepDownSnowBall(StepDownSnowBall):
+class DiebianStepDownSnowBall(DiebianSnowBall, StepDownSnowBall):
     """次年双降雪球
 
     敲出票息随时间推移逐级降低，敲出点位从第二年开始随时间逐步下调。
@@ -19,15 +20,6 @@ class DiebianStepDownSnowBall(StepDownSnowBall):
 
     name = '次年双降雪球'
 
-    params = [
-        'knock_in_level',
-        'knock_out_level',
-        'coupon_rate',
-        'coupon_div',
-        'knock_out_view_day',
-        'time_to_maturity'
-    ]
-
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义次年双降雪球的参数"""
-        super.__init__(setting)
+        super().__init__(setting)

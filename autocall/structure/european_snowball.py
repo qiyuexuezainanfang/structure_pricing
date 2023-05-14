@@ -1,9 +1,10 @@
 from typing import Dict
 
-from . import OriginalSnowBall
+from .. import AutocallTemplate
+from .. import PricingEngine
 
 
-class EuropeanSnowBall(OriginalSnowBall):
+class EuropeanSnowBall(AutocallTemplate, PricingEngine):
     """欧式雪球
 
     仅在最后一天观察是否敲入。
@@ -30,4 +31,10 @@ class EuropeanSnowBall(OriginalSnowBall):
 
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义欧式雪球的参数"""
-        super.__init__(setting)
+        super().__init__(setting)
+
+    def _set_knock_out_view_day(self, setting) -> None:
+        self.knock_out_view_day: list[int] = [
+            setting['time_to_maturity']
+            * setting['knock_out_view_day'] * 21 - 1
+            ]

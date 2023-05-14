@@ -1,5 +1,7 @@
 from typing import Dict
 
+import numpy as np
+
 from . import OriginalSnowBall
 
 
@@ -32,4 +34,21 @@ class ProtectedSnowBall(OriginalSnowBall):
 
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义限损雪球的参数"""
-        super.__init__(setting)
+        super().__init__(setting)
+
+    def _cal_loss(self) -> None:
+        """计算损失，重载PricingEngine的函数"""
+        loss_rate_array = (self.st[
+                -1,
+                self.not_knock_out
+                & self.knock_in_scenario
+                & (self.st[-1] < self.s0)
+                ] / self.s0 - 1)
+        max_loss_rate = self.protected_level / self.s0 - 1
+        protected_loss_rate_array = np.array(
+            list(map(lambda x: max(x, max_loss_rate), loss_rate_array)))
+        self.loss = np.sum(
+            protected_loss_rate_array
+            * self.s0
+            * np.exp(-self.r * self.time_to_maturity)
+            )  # 敲入造成的总亏损，对于st>s0的情况，损益为0，不需要考虑

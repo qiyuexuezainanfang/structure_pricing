@@ -1,7 +1,9 @@
-from . import OriginalSnowBall
+from typing import Dict
+
+from . import ProtectedSnowBall
 
 
-class Booster(OriginalSnowBall):
+class Booster(ProtectedSnowBall):
     """助推器
 
     既通过上涨参与率放大上涨收益，又可提供下跌保护
@@ -25,3 +27,9 @@ class Booster(OriginalSnowBall):
         'participation_rate_no_knock_in',
         'protected_level'
     ]
+
+    def __init__(self, setting: Dict[str, float]) -> None:
+        """构造函数，定义助推器的参数"""
+        super().__init__(setting)
+        self.coupon_div = 0
+        self.knock_in_level = 1

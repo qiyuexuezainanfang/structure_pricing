@@ -1,11 +1,10 @@
 from typing import Dict
 
-import numpy as np
+from .. import AutocallTemplate
+from .. import PricingEngine
 
-from . import OriginalSnowBall
 
-
-class KiUpSnowBall(OriginalSnowBall):
+class KiUpSnowBall(AutocallTemplate, PricingEngine):
     """KI递增雪球
 
     在经典雪球基础上，敲入价逐渐递增。
@@ -32,18 +31,18 @@ class KiUpSnowBall(OriginalSnowBall):
 
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义KI递增雪球的参数"""
-        super.__init__(setting)
-
-        # 如果敲入水平是一个整数或者浮点数，则生成递增敲入价列表
-        if (
-            isinstance(self.knock_in_level, int)
-                or isinstance(self.knock_in_level, float)):
-            self._set_knock_in_level()
+        super().__init__(setting)
+        self._set_knock_in_level()
 
     def _set_knock_in_level(self) -> None:
-        """生成默认敲入水平列表"""
-        self.knock_in_level = np.linspace(
-            self.knock_in_level,
-            1,
-            self.time_to_maturity * 252
-            )
+        """生成敲入列表，重载AutocallTemplate的方法"""
+        self.new_knock_in_level = []
+        day_nums = self.time_to_maturity * 252
+        for i in range(len(self.knock_in_level) - 1):
+            pre_item = self.knock_in_level[i]
+            next_item = self.knock_in_level[i + 1]
+            self.new_knock_in_level.extend(
+                [pre_item[1]] * (next_item[0] - pre_item[0]))
+        self.new_knock_in_level.extend(
+            [next_item[1]] * (day_nums - next_item[0]))
+        self.knock_in_level = self.new_knock_in_level

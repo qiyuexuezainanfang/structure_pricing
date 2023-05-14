@@ -1,9 +1,10 @@
 from typing import Dict
 
 from . import ParachuteSnowBall
+from . import DiebianSnowBall
 
 
-class DiebianParachuteSnowBall(ParachuteSnowBall):
+class DiebianParachuteSnowBall(DiebianSnowBall, ParachuteSnowBall):
     """蝶变浮力雪球
 
     敲出票息随时间逐级降低，敲出点位最后一个月下跳。
@@ -19,15 +20,6 @@ class DiebianParachuteSnowBall(ParachuteSnowBall):
 
     name = '蝶变浮力雪球'
 
-    params = [
-        'knock_in_level',
-        'knock_out_level',
-        'coupon_rate',
-        'coupon_div',
-        'knock_out_view_day',
-        'time_to_maturity'
-    ]
-
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义蝶变浮力雪球的参数"""
-        super.__init__(setting)
+        super().__init__(setting)

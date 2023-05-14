@@ -1,9 +1,10 @@
-from typing import List, Dict
+from typing import Dict
 
 from .. import AutocallTemplate
+from .. import PricingEngine
 
 
-class OriginalSnowBall(AutocallTemplate):
+class OriginalSnowBall(AutocallTemplate, PricingEngine):
     """经典雪球结构
 
     经典雪球结构在下方提供了下跌保护，只要后市跌幅不大，都可获得固定票息，
@@ -33,27 +34,4 @@ class OriginalSnowBall(AutocallTemplate):
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义经典雪球的参数"""
 
-        # 先检查本结构所需要的参数有没有被传入
-        for param in self.params:
-            if param not in setting.keys():
-                print(f'缺少{param}参数')
-                return
-
-        # 再检查传入的参数是否多余
-        for param in setting.keys():
-            if param not in self.params:
-                del setting[param]
-
         super().__init__(setting)
-
-        # 敲出观察日如果是一个整数，则生成观察日列表
-        if isinstance(self.knock_out_view_day, int):
-            self._set_knock_out_view_day(setting)
-
-    def _set_knock_out_view_day(self, setting) -> None:
-        self.knock_out_view_day: List[int] = [
-            i*21-1 for i in range(
-                1,
-                setting['time_to_maturity'] * setting['knock_out_view_day'] + 1
-                )
-            ]

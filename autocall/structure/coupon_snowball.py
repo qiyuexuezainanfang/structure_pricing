@@ -17,15 +17,6 @@ class CouponSnowBall(OriginalSnowBall):
 
     name = '红利雪球'
 
-    params = [
-        'knock_in_level',
-        'knock_out_level',
-        'coupon_rate',
-        'coupon_div',
-        'knock_out_view_day',
-        'time_to_maturity'
-    ]
-
     def __init__(self, setting: Dict[str, float]) -> None:
         """构造函数，定义红利雪球的参数"""
-        super.__init__(setting)
+        super().__init__(setting)

@@ -1,17 +1,17 @@
-from typing import Dict
+from typing import Dict, List
+from abc import ABC
 
 import numpy as np
-import cupy as cp
+# import cupy as cp
 
 
-class PricingEngine:
+class PricingEngine(ABC):
     """定价引擎, 用来为Autocall结构进行定价。
 
-    使用时分以下几步：
-    1、实例化（推荐不带任何参数）。
+    本类的成员变量和方法都会被autocall继承。使用时分以下几步：
+    1、被autocall继承，通过autocall实例化。
     2、运行set_underlying_parameters设置标的资产的参数。
-    3、运行add_autocall添加具体的结构类，autocall_setting是结构相关参数。
-    4、运行定价函数或希腊字母计算函数
+    3、运行定价函数或希腊字母计算函数
 
     属性:
         s0: 标的资产初始价格，默认是None，
@@ -20,34 +20,23 @@ class PricingEngine:
         q: 标的资产分红率，默认为None。
     """
 
-    params = [
+    underlying_params = [
         's0',
         'sigma',
         'r',
         'q',
     ]
 
-    autocalls: Dict[str, type] = {}
-
     def set_underlying_parameters(self, setting: Dict[str, float]) -> None:
         """设置标的资产参数"""
 
         # 确保标的资产参数都有被传入，并且创建它们
-        for param in self.params:
+        for param in self.underlying_params:
             if param not in setting.keys():
-                print(f'缺少{param}参数')
+                print(f'标的资产缺少{param}参数')
                 return
             setattr(self, param, setting[param])
         self.drift: float = self.r - self.q
-
-    def add_autocall(
-        self,
-        autocall_class: type,
-        autocall_setting: Dict[str, float]
-    ) -> None:
-        """往引擎增加autocall"""
-        self.autocall = autocall_class(autocall_setting)
-        self.autocalls[autocall_class.name] = self.autocall
 
     def mc_pricing(self) -> float:
         """蒙特卡洛定价
@@ -74,27 +63,46 @@ class PricingEngine:
     def _generate_paths(self, n_path: int = 300000) -> None:
         """生成标的路径"""
         self.n_path = n_path
-        tstep = self.autocall.time_to_maturity * 252
-        dt = self.autocall.time_to_maturity / tstep
-        z = cp.random.normal(size=(tstep + 1, n_path))
-        st = cp.zeros((tstep + 1, n_path))
+        tstep = self.time_to_maturity * 252 - 1
+        dt = self.time_to_maturity / tstep
+        # z = cp.random.normal(size=(tstep + 1, n_path))
+        # st = cp.zeros((tstep + 1, n_path))
+        z = np.random.normal(size=(tstep + 1, n_path))
+        st = np.zeros((tstep + 1, n_path))
         st[0] = self.s0
+        # for t in range(1, tstep + 1):
+        #     st[t] = st[t - 1] * cp.exp(
+        #         (self.drift - 0.5 * self.sigma ** 2) * dt
+        #         + self.sigma * cp.sqrt(dt) * z[t]
+        #         )
+
         for t in range(1, tstep + 1):
-            st[t] = st[t - 1] * cp.exp(
+            st[t] = st[t - 1] * np.exp(
                 (self.drift - 0.5 * self.sigma ** 2) * dt
-                + self.sigma * cp.sqrt(dt) * z[t]
+                + self.sigma * np.sqrt(dt) * z[t]
                 )
         self.st = st
 
     def _cal_knock_out_date(self) -> None:
         """计算每条路径敲出时间"""
-        knock_out_scenario = cp.tile(
-            self.autocall.knock_out_view_day, (self.n_path, 1)).T
-        knock_out_scenario = cp.where(
-            self.st[self.autocall.knock_out_view_day]
-            > self.autocall.knock_out_level,
+        # knock_out_scenario = cp.tile(
+        #     self.autocall.knock_out_view_day, (self.n_path, 1)).T
+        # knock_out_scenario = cp.where(
+        #     self.st[self.autocall.knock_out_view_day]
+        #     > self.autocall.knock_out_level,
+        #     knock_out_scenario,
+        #     cp.inf
+        #     )
+        knock_out_scenario = np.tile(
+            self.knock_out_view_day, (self.n_path, 1)).T
+        self.knock_out_level = np.array(self.knock_out_level) * self.s0
+        knock_out_level = np.tile(
+            self.knock_out_level, (self.n_path, 1)).T
+        knock_out_scenario = np.where(
+            self.st[self.knock_out_view_day]
+            > knock_out_level,
             knock_out_scenario,
-            cp.inf
+            np.inf
             )
         # 记录每条路径的具体敲出日，如果无敲出则保留inf
         knock_out_date = np.min(knock_out_scenario, axis=0)
@@ -103,10 +111,19 @@ class PricingEngine:
     def _cal_knock_out_payoff(self) -> None:
         """计算敲出payoff"""
         is_knock_out = self.knock_out_date != np.inf
-        knock_out_year = self.knock_out_date[is_knock_out] / 252  # 把天化为年
+        if isinstance(self.coupon_rate, List):
+            coupon_rate_array = np.array(self.coupon_rate)
+            knock_out_month = (self.knock_out_date + 1) / 21
+            knock_out_month = knock_out_month[is_knock_out]
+            knock_out_year = knock_out_month / 12
+            knock_out_month = knock_out_month.astype(int) - 1
+            self.coupon_rate = coupon_rate_array[knock_out_month]
+        else:
+            knock_out_year = self.knock_out_date[is_knock_out] / 252  # 把天化为年
+
         knock_out_profit = np.sum(
             knock_out_year
-            * self.autocall.coupon_rate
+            * self.coupon_rate
             * self.s0
             * np.exp(-self.r * knock_out_year)
             )  # 把payoff先折现再求和,计算敲出总所入
@@ -115,18 +132,20 @@ class PricingEngine:
     def _cal_hold_to_maturity_payoff(self) -> None:
         """计算持有到期的payoff"""
         # 判断某一条路径是否有敲入
+        knock_in_level = np.tile(
+            self.knock_in_level, (self.n_path, 1)).T
         self.knock_in_scenario = np.any(
-            self.st < self.autocall.knock_in_level, axis=0)
+            self.st < knock_in_level * self.s0, axis=0)
         # 持有到期，没有敲入也没有敲出
         self.not_knock_out = self.knock_out_date == np.inf
-        hold_to_maturity = (self.knock_in_scenario == False) \
+        hold_to_maturity = (~ self.knock_in_scenario) \
             & self.not_knock_out
         # 平稳持有到期路径条数
         hold_to_maturity_count = np.count_nonzero(hold_to_maturity)
         hold_to_maturity_profit = hold_to_maturity_count\
-            * self.autocall.coupon_rate\
+            * self.coupon_div\
             * self.s0\
-            * np.exp(-self.r * self.autocall.time_to_maturity)  # 平稳持有到期收入
+            * np.exp(-self.r * self.time_to_maturity)  # 平稳持有到期收入
         self.hold_to_maturity_profit = hold_to_maturity_profit
 
     def _cal_loss(self) -> None:
@@ -135,11 +154,11 @@ class PricingEngine:
             (self.st[
                 -1,
                 self.not_knock_out
-                & (self.knock_in_scenario == True)
+                & self.knock_in_scenario
                 & (self.st[-1] < self.s0)
                 ] / self.s0 - 1)
             * self.s0
-            * np.exp(-self.r * self.autocall.time_to_maturity)
+            * np.exp(-self.r * self.time_to_maturity)
             )  # 敲入造成的总亏损，对于st>s0的情况，损益为0，不需要考虑
 
     def _cal_price(self) -> None:
