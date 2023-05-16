@@ -1,8 +1,8 @@
 # 期权的全部结构参数都在这里设置，且只在这里设置
 
 OriginalSnowBall_params = {
-        'knock_in_level': 0.85,
-        'knock_out_level': 1.03,
+        'knock_in_level': 85,
+        'knock_out_level': 103,
         'coupon_rate': 0.3,
         'coupon_div': 0.3,
         'knock_out_view_day': 12,  # int表示一年观察次数

@@ -60,7 +60,7 @@ class PricingEngine(ABC):
         self._cal_price()
         return self.price
 
-    def _generate_paths(self, n_path: int = 300000) -> None:
+    def _generate_paths(self, n_path: int = 1000000) -> None:
         """生成标的路径"""
         self.n_path = n_path
         tstep = self.time_to_maturity * 252 - 1
@@ -95,7 +95,7 @@ class PricingEngine(ABC):
         #     )
         knock_out_scenario = np.tile(
             self.knock_out_view_day, (self.n_path, 1)).T
-        self.knock_out_level = np.array(self.knock_out_level) * self.s0
+        self.knock_out_level = np.array(self.knock_out_level)
         knock_out_level = np.tile(
             self.knock_out_level, (self.n_path, 1)).T
         knock_out_scenario = np.where(
@@ -135,7 +135,7 @@ class PricingEngine(ABC):
         knock_in_level = np.tile(
             self.knock_in_level, (self.n_path, 1)).T
         self.knock_in_scenario = np.any(
-            self.st < knock_in_level * self.s0, axis=0)
+            self.st < knock_in_level, axis=0)
         # 持有到期，没有敲入也没有敲出
         self.not_knock_out = self.knock_out_date == np.inf
         hold_to_maturity = (~ self.knock_in_scenario) \
@@ -168,23 +168,32 @@ class PricingEngine(ABC):
             + self.knock_out_profit
             + self.loss) / self.n_path
 
+    # def mc_delta(self) -> float:
+    #     self.st = self.st + 0.01
+    #     self._cal_knock_out_date()
+    #     self._cal_knock_out_payoff()
+    #     self._cal_hold_to_maturity_payoff()
+    #     self._cal_loss()
+    #     self._cal_price()
+    #     _price = self.price
+    #     self.st = self.st - 0.02  # 因为之前加了0.01，所以要减多一点
+    #     self._cal_knock_out_date()
+    #     self._cal_knock_out_payoff()
+    #     self._cal_hold_to_maturity_payoff()
+    #     self._cal_loss()
+    #     self._cal_price()
+    #     price_ = self.price
+    #     delta = (_price - price_) / 0.02
+    #     self.st = self.st + 0.01  # 回到原位
+    #     return delta
+
     def mc_delta(self) -> float:
-        self.st = self.st + 0.01
-        self._cal_knock_out_date()
-        self._cal_knock_out_payoff()
-        self._cal_hold_to_maturity_payoff()
-        self._cal_loss()
-        self._cal_price()
-        _price = self.price
-        self.st = self.st - 0.02  # 因为之前加了0.01，所以要减多一点
-        self._cal_knock_out_date()
-        self._cal_knock_out_payoff()
-        self._cal_hold_to_maturity_payoff()
-        self._cal_loss()
-        self._cal_price()
-        price_ = self.price
-        delta = (_price - price_) / 0.02
-        self.st = self.st + 0.01  # 回到原位
+        self.s0 = self.s0 + 1
+        _price = self.mc_pricing()
+        self.s0 = self.s0 - 2
+        price_ = self.mc_pricing()
+        delta = (_price - price_) / 2
+        self.s0 = self.s0 + 1
         return delta
 
     def mc_gamma(self) -> float:
