@@ -169,15 +169,43 @@ class PricingEngine(ABC):
             + self.loss) / self.n_path
 
     def mc_delta(self) -> float:
-        self.pre_st = self.st + 0.01
-        self.beyond_st = self.st - 0.01
-        pass
+        self.st = self.st + 0.01
+        self._cal_knock_out_date()
+        self._cal_knock_out_payoff()
+        self._cal_hold_to_maturity_payoff()
+        self._cal_loss()
+        self._cal_price()
+        _price = self.price
+        self.st = self.st - 0.02  # 因为之前加了0.01，所以要减多一点
+        self._cal_knock_out_date()
+        self._cal_knock_out_payoff()
+        self._cal_hold_to_maturity_payoff()
+        self._cal_loss()
+        self._cal_price()
+        price_ = self.price
+        delta = (_price - price_) / 0.02
+        self.st = self.st + 0.01  # 回到原位
+        return delta
 
     def mc_gamma(self) -> float:
-        pass
+        self.st = self.st + 0.01
+        _delta = self.mc_delta()
+        self.st = self.st - 0.02
+        delta_ = self.mc_delta()
+        gamma = (_delta - delta_) / 0.02
+        self.st = self.st + 0.01  # 回到原位
+        return gamma
 
     def mc_vega(self) -> float:
-        pass
+        self.sigma = self.sigma + 0.005
+        self.mc_pricing()
+        _price = self.price
+        self.sigma = self.sigma - 0.01
+        self.mc_pricing()
+        price_ = self.price
+        self.sigma = self.sigma + 0.005  # 回到原样
+        vega = _price - price_
+        return vega
 
     def mc_theta(self) -> float:
         pass
