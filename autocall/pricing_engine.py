@@ -37,6 +37,7 @@ class PricingEngine(ABC):
                 return
             setattr(self, param, setting[param])
         self.drift: float = self.r - self.q
+        self.nominal_principal = self.s0
 
     def mc_pricing(self) -> float:
         """蒙特卡洛定价
@@ -60,7 +61,7 @@ class PricingEngine(ABC):
         self._cal_price()
         return self.price
 
-    def _generate_paths(self, n_path: int = 1000000) -> None:
+    def _generate_paths(self, n_path: int = 300000) -> None:
         """生成标的路径"""
         self.n_path = n_path
         tstep = self.time_to_maturity * 252 - 1
@@ -124,7 +125,7 @@ class PricingEngine(ABC):
         knock_out_profit = np.sum(
             knock_out_year
             * self.coupon_rate
-            * self.s0
+            * self.nominal_principal
             * np.exp(-self.r * knock_out_year)
             )  # 把payoff先折现再求和,计算敲出总所入
         self.knock_out_profit = knock_out_profit
@@ -144,7 +145,7 @@ class PricingEngine(ABC):
         hold_to_maturity_count = np.count_nonzero(hold_to_maturity)
         hold_to_maturity_profit = hold_to_maturity_count\
             * self.coupon_div\
-            * self.s0\
+            * self.nominal_principal\
             * np.exp(-self.r * self.time_to_maturity)  # 平稳持有到期收入
         self.hold_to_maturity_profit = hold_to_maturity_profit
 
@@ -157,7 +158,7 @@ class PricingEngine(ABC):
                 & self.knock_in_scenario
                 & (self.st[-1] < self.s0)
                 ] / self.s0 - 1)
-            * self.s0
+            * self.nominal_principal
             * np.exp(-self.r * self.time_to_maturity)
             )  # 敲入造成的总亏损，对于st>s0的情况，损益为0，不需要考虑
 
