@@ -37,7 +37,10 @@ class PricingEngine(ABC):
                 return
             setattr(self, param, setting[param])
         self.drift: float = self.r - self.q
-        self.nominal_principal = self.s0
+        try:
+            dir(self.nominal_principal)
+        except AttributeError:
+            self.nominal_principal = self.s0  # 如果未定义名义本金则默认s0
 
     def mc_pricing(self) -> float:
         """蒙特卡洛定价
@@ -116,17 +119,16 @@ class PricingEngine(ABC):
             coupon_rate_array = np.array(self.coupon_rate)
             knock_out_month = (self.knock_out_date + 1) / 21
             knock_out_month = knock_out_month[is_knock_out]
-            knock_out_year = knock_out_month / 12
+            self.knock_out_year = knock_out_month / 12
             knock_out_month = knock_out_month.astype(int) - 1
             self.coupon_rate = coupon_rate_array[knock_out_month]
         else:
-            knock_out_year = self.knock_out_date[is_knock_out] / 252  # 把天化为年
-
+            self.knock_out_year = self.knock_out_date[is_knock_out] / 252
         knock_out_profit = np.sum(
-            knock_out_year
+            self.knock_out_year
             * self.coupon_rate
             * self.nominal_principal
-            * np.exp(-self.r * knock_out_year)
+            * np.exp(-self.r * self.knock_out_year)
             )  # 把payoff先折现再求和,计算敲出总所入
         self.knock_out_profit = knock_out_profit
 
@@ -142,8 +144,9 @@ class PricingEngine(ABC):
         hold_to_maturity = (~ self.knock_in_scenario) \
             & self.not_knock_out
         # 平稳持有到期路径条数
-        hold_to_maturity_count = np.count_nonzero(hold_to_maturity)
-        hold_to_maturity_profit = hold_to_maturity_count\
+        self.hold_to_maturity_count = np.count_nonzero(hold_to_maturity)
+        hold_to_maturity_profit = self.hold_to_maturity_count\
+            * self.time_to_maturity\
             * self.coupon_div\
             * self.nominal_principal\
             * np.exp(-self.r * self.time_to_maturity)  # 平稳持有到期收入
