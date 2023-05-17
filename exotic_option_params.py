@@ -1,5 +1,7 @@
 # 期权的全部结构参数都在这里设置，且只在这里设置
 
+import numpy as np
+
 OriginalSnowBall_params = {
         'knock_in_level': 85,
         'knock_out_level': 103,
@@ -213,4 +215,29 @@ TongxinSnowBall_params = {
         'coupon_div': None,
         'time_to_maturity': None,
         'participation_rate_knock_in': None
+}
+
+DongfangSnowBall_params = {
+        'knock_out_level':
+        list(np.array([1, 0.995, 0.99, 0.985, 0.98, 0.975, 0.97, 0.965, 0.96,
+                      0.955, 0.95, 0.945, 0.94, 0.935, 0.93, 0.925, 0.92,
+                      0.915, 0.91, 0.905, 0.9, 0.895, 0.89, 0.885]) * 5864.47),
+        'knock_in_level': 0.75 * 5864.47,
+        'coupon_rate':
+        [0.15, 0.145, 0.14, 0.135, 0.13, 0.125, 0.12, 0.115, 0.11,
+         0.105, 0.1, 0.095, 0.09, 0.085, 0.08, 0.075, 0.07, 0.065,
+         0.06, 0.055, 0.05, 0.045, 0.04, 0.035],
+        'coupon_div': 0.04,
+        'knock_out_view_day': 12,
+        'time_to_maturity': 2,
+        'abs_div_return': 0.01,
+        'annualized_div_return': 0.01,
+        'abs_div_return_2': -0.04,
+        'annualized_div_return_2': -0.04,
+        'up_participation_rate': 1,
+        'down_participation_rate': 1,
+        'pre_paid_rate': 0.5,
+        'knock_in_high_k': 0.9,
+        'knock_in_low_k': 0.6,
+        'nominal_principal': 100000000
 }
