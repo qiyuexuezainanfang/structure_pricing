@@ -22,3 +22,4 @@ from .airbag import Airbag
 from .booster import Booster
 from .tongxin_snowball import TongxinSnowBall
 from .bearish_snowball import BearishSnowBall
+from .dongfang_snowball import DongfangSnowBall
