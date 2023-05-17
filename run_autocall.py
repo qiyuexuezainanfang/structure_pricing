@@ -7,7 +7,7 @@ from judge_option_params import judge_option_params
 
 # 可以进行定价的结构，用户根据需要进行选择，可多选
 autocall_structure: List[type] = [
-    OriginalSnowBall,
+    # OriginalSnowBall,
     # StepDownSnowBall,
     # ProtectedSnowBall,
     # KiUpSnowBall,
@@ -30,15 +30,16 @@ autocall_structure: List[type] = [
     # Airbag,
     # Booster,
     # TongxinSnowBall,
-    # BearishSnowBall
+    # BearishSnowBall,
+    DongfangSnowBall
 ]
 
 # underlying_parameters
 underlying_params: Dict[str, float] = {
-    's0': 100,
-    'sigma': 0.2,
-    'r': 0.0,
-    'q': 0.0
+    's0': 5863.47,
+    'sigma': 0.18,
+    'r': 0.03,
+    'q': 0.09
 }
 
 
@@ -56,8 +57,9 @@ def main():
     # 定价
     for name, autocall in autocalls.items():
         value = autocall.mc_pricing()
-        delta = autocall.mc_delta()
-        print(f"{name}价格：{value}, delta: {delta}")
+        print(f"{name}价格：{value}")
+        # delta = autocall.mc_delta()
+        # print(f'{name}delta: {delta}')
 
 
 if __name__ == "__main__":
