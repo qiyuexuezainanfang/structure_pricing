@@ -36,7 +36,7 @@ autocall_structure: List[type] = [
 
 # underlying_parameters
 underlying_params: Dict[str, float] = {
-    's0': 5863.47,
+    's0': 5864.47,
     'sigma': 0.18,
     'r': 0.03,
     'q': 0.09
@@ -58,8 +58,8 @@ def main():
     for name, autocall in autocalls.items():
         value = autocall.mc_pricing()
         print(f"{name}价格：{value}")
-        # delta = autocall.mc_delta()
-        # print(f'{name}delta: {delta}')
+        delta = autocall.mc_delta()
+        print(f'{name}delta: {delta}')
 
 
 if __name__ == "__main__":

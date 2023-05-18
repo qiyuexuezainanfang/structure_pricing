@@ -115,7 +115,8 @@ class PricingEngine(ABC):
     def _cal_knock_out_payoff(self) -> None:
         """计算敲出payoff"""
         is_knock_out = self.knock_out_date != np.inf
-        if isinstance(self.coupon_rate, List):
+        if isinstance(self.coupon_rate, List)\
+                or isinstance(self.coupon_rate, np.ndarray):
             coupon_rate_array = np.array(self.coupon_rate)
             knock_out_month = (self.knock_out_date + 1) / 21
             knock_out_month = knock_out_month[is_knock_out]
@@ -172,25 +173,6 @@ class PricingEngine(ABC):
             + self.knock_out_profit
             + self.loss) / self.n_path
 
-    # def mc_delta(self) -> float:
-    #     self.st = self.st + 0.01
-    #     self._cal_knock_out_date()
-    #     self._cal_knock_out_payoff()
-    #     self._cal_hold_to_maturity_payoff()
-    #     self._cal_loss()
-    #     self._cal_price()
-    #     _price = self.price
-    #     self.st = self.st - 0.02  # 因为之前加了0.01，所以要减多一点
-    #     self._cal_knock_out_date()
-    #     self._cal_knock_out_payoff()
-    #     self._cal_hold_to_maturity_payoff()
-    #     self._cal_loss()
-    #     self._cal_price()
-    #     price_ = self.price
-    #     delta = (_price - price_) / 0.02
-    #     self.st = self.st + 0.01  # 回到原位
-    #     return delta
-
     def mc_delta(self) -> float:
         self.s0 = self.s0 + 1
         _price = self.mc_pricing()
@@ -201,12 +183,12 @@ class PricingEngine(ABC):
         return delta
 
     def mc_gamma(self) -> float:
-        self.st = self.st + 0.01
+        self.st = self.st + 1
         _delta = self.mc_delta()
-        self.st = self.st - 0.02
+        self.st = self.st - 2
         delta_ = self.mc_delta()
-        gamma = (_delta - delta_) / 0.02
-        self.st = self.st + 0.01  # 回到原位
+        gamma = (_delta - delta_) / 2
+        self.st = self.st + 1  # 回到原位
         return gamma
 
     def mc_vega(self) -> float:
@@ -227,19 +209,47 @@ class PricingEngine(ABC):
         pass
 
     def mc_vanna(self) -> float:
-        pass
+        """sigma每波动1% ，delta的变动"""
+        self.sigma = self.sigma + 0.005
+        _delta = self.mc_delta()
+        self.sigma = self.sigma - 0.01
+        delta_ = self.mc_delta()
+        vanna = _delta - delta_
+        self.sigma = self.sigma + 0.005  # 回到原位
+        return vanna
 
     def mc_vomma(self) -> float:
+        """sigma每波动1% ，Vega的变动"""
+        self.sigma = self.sigma + 0.005
+        _vega = self.mc_vega()
+        self.sigma = self.sigma - 0.01
+        vega_ = self.mc_vega()
+        vomma = _vega - vega_
+        self.sigma = self.sigma + 0.005  # 回到原位
+        return vomma
+
+    def mc_veta(self) -> float:
         pass
 
     def mc_speed(self) -> float:
-        pass
+        """s每变动1，gamma的变动"""
+        self.st = self.st + 1
+        _gamma = self.mc_gamma()
+        self.st = self.st - 2
+        gamma_ = self.mc_gamma()
+        speed = (_gamma - gamma_) / 2
+        self.st = self.st + 1  # 回到原位
+        return speed
 
     def mc_zomma(self) -> float:
-        pass
-
-    def mc_greeks(self) -> float:
-        pass
+        """sigma每波动1%，gamma的变动"""
+        self.sigma = self.sigma + 0.005
+        _gamma = self.mc_gamma()
+        self.sigma = self.sigma - 0.01
+        gamma_ = self.mc_gamma()
+        zomma = _gamma - gamma_
+        self.sigma = self.sigma + 0.005  # 回到原位
+        return zomma
 
     def pde_pricing(self) -> float:
         """有限差分定价"""
